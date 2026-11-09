@@ -1,0 +1,8 @@
+:root {
+  --forest: #064E3B; --deep: #043927; --emerald: #059669; --mint: #ECFDF5;
+  --bg: #fff; --card: #fff; --border: #DDE9E2; --text: #172B24; --muted: #64756B;
+  --warn: #F59E0B; --danger: #DC2626; --blue: #0EA5E9;
+  --k1: #ECFDF5; --k2: #FEF9C3; --k3: #E0F2FE; --k4: #FCE7F3;
+  --sidebar-w: 240px; --radius: 14px;
+  color-scheme: light;
+}
