@@ -1,4 +1,4 @@
-# Suranga AgroERP – Frontend
+# Suranga Agro – Frontend
 
 Agricultural trading & processing management UI (Home, Buy Stock, My Stock, Sell Products, Processing, Money, People, Reports, Settings).
 Vanilla JavaScript (ES modules) + Vite. No framework, no runtime dependencies.
@@ -26,7 +26,7 @@ src/
 ```
 
 ## Connecting your backend
-The frontend checks `GET /api/v1/health/live` on startup and shows whether the API is online. During development, Vite proxies `/api` to `http://localhost:3001`; copy `.env.example` to `.env` only if you need to override `VITE_API_BASE_URL`.
+The frontend checks `GET /api/v1/health/live` on startup. During development, Vite proxies `/api` to `http://localhost:3001`; copy `.env.example` to `.env` only if you need to override `VITE_API_BASE_URL`.
 
 The business screens still use browser `localStorage`: the backend currently provides health and authentication endpoints, not product, stock, purchase, or sales APIs. Those screens will move to server data as the business endpoints are implemented. The API liveness check does not require a database; `/api/v1/health/ready` reports database connectivity separately.
 

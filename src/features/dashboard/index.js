@@ -83,9 +83,9 @@ export const dashboard = {
     <div class="kp">${kpi('Today’s sales', rs(t.s), 'c1')}${kpi('Gross profit (est.)', rs(t.s - t.c), 'c2')}${kpi('Purchases', rs(purchases), 'c3')}${kpi('Expenses', rs(expenses), 'c4')}</div>
     <div class="card"><h3>Quick actions</h3><div class="qa"><a href="#purchases">＋ Add purchase</a><a href="#sales">＋ Record sale</a><a href="#processing">＋ Add production</a><a href="#money">＋ Record expense</a></div></div>
     <div class="cols">
-      <div class="card"><h3>Sales vs gross profit (7 days)</h3><div class="bars">${days.map((x) => `<div><span style="height:${(x.s / max) * 130}px;background:#16a34a"></span><span style="height:${(Math.max(0, x.s - x.c) / max) * 130}px;background:#f59e0b"></span><br>${x.l}</div>`).join('')}</div><p class="lg"><i style="background:#16a34a"></i>Sales<i style="background:#f59e0b"></i>Gross profit</p></div>
+      <div class="card"><h3>Sales vs gross profit (7 days)</h3><div class="bars">${days.map((x) => `<div><span style="height:${(x.s / max) * 130}px;background:var(--chart-sales)"></span><span style="height:${(Math.max(0, x.s - x.c) / max) * 130}px;background:var(--chart-profit)"></span><br>${x.l}</div>`).join('')}</div><p class="lg"><i style="background:var(--chart-sales)"></i>Sales<i style="background:var(--chart-profit)"></i>Gross profit</p></div>
       <div class="card"><h3>Stock at a glance</h3>${table(['Product', 'Available'], d.prod.slice(0, 5).map((p) => [esc(p.n), Math.round(d.stock[p.id] || 0) + ' kg']))}</div>
-      <div class="card"><h3>Sales by product</h3><div class="donut" style="background:conic-gradient(${gradient || '#ddd 0 100%'})"></div><p class="lg">${byProduct.map((x, i) => `<i style="background:${COLORS[i % 6]}"></i>${esc(x.n)} ${((x.v / total) * 100).toFixed(0)}%`).join('')}</p></div>
+      <div class="card"><h3>Sales by product</h3><div class="donut" style="background:conic-gradient(${gradient || 'var(--border) 0 100%'})"></div><p class="lg">${byProduct.map((x, i) => `<i style="background:${COLORS[i % 6]}"></i>${esc(x.n)} ${((x.v / total) * 100).toFixed(0)}%`).join('')}</p></div>
     </div>
     <div class="card"><h3>Recent transactions</h3>${table(['Date', 'Type', 'Product', 'Party', 'Qty', 'Amount'],
       d.tx.filter((x) => x.pid).slice().sort((a, b) => (a.d < b.d ? 1 : -1)).slice(0, 8)

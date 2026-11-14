@@ -11,10 +11,25 @@ import { $ } from './utils/dom.js';
 import { routes, featureActions } from './features/index.js';
 import { api } from './services/api.js';
 import { toast } from './components/toast.js';
+import { applyTheme, getInitialTheme, setTheme } from './core/theme.js';
+
+let currentTheme = getInitialTheme();
+applyTheme(currentTheme);
+const themeToggle = $('#theme-toggle');
+const updateThemeToggle = () => {
+  themeToggle.innerHTML = icon(currentTheme === 'dark' ? 'moon' : 'sun', 20);
+  themeToggle.setAttribute('aria-label', `Switch to ${currentTheme === 'dark' ? 'light' : 'dark'} mode`);
+  themeToggle.setAttribute('aria-pressed', String(currentTheme === 'dark'));
+  themeToggle.title = `Switch to ${currentTheme === 'dark' ? 'light' : 'dark'} mode`;
+};
 
 register({
   ...featureActions,
   toggleNav,
+  toggleTheme() {
+    currentTheme = setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    updateThemeToggle();
+  },
   setTab(arg) {
     const [key, value] = arg.split(':');
     state.tab[key] = value;
@@ -23,6 +38,7 @@ register({
 });
 
 $('#menu-btn').innerHTML = icon('menu', 22);
+updateThemeToggle();
 bindEvents(document);
 startRouter(routes);
 

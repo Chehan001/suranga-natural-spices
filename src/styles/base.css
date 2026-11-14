@@ -1,6 +1,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text);
-  font: 15px/1.45 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  font: 15px/1.45 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  transition: background-color .2s ease, color .2s ease; }
 h1, h2, h3 { margin: 0; }
 a { color: var(--emerald); }
 label { display: block; font-size: 13px; color: var(--muted); font-weight: 600; }
@@ -8,6 +9,10 @@ input, select { display: block; width: 100%; margin-top: 4px; padding: 11px; min
   border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); }
 input[type=radio] { display: inline-block; width: auto; min-height: 0; margin-right: 6px; }
 :is(input, select, button, a):focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+::selection { background: var(--emerald); color: var(--button-text); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 14px; }
 th { color: var(--muted); font-size: 12px; text-transform: uppercase; }

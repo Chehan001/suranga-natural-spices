@@ -4,15 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#064E3B">
+  <meta name="theme-color" content="#F8FAF9">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>Suranga AgroERP</title>
+  <meta name="description" content="Suranga Agro agricultural business management">
+  <title>Suranga Agro</title>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem('suranga-agro:theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        document.documentElement.dataset.theme = savedTheme;
+      }
+    } catch (error) {
+      console.warn('Could not read the saved theme preference.', error);
+    }
+  </script>
 </head>
 <body>
   <aside id="sidebar" aria-label="Main navigation">
     <div class="brand">
       <svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><path d="M6 34C6 16 18 6 36 5c0 18-10 29-30 29z" fill="#22c55e"/><path d="M8 33C16 22 24 15 32 9" stroke="#064E3B" stroke-width="2" fill="none"/></svg>
-      <span>Suranga AgroERP</span>
+      <span>Suranga Agro</span>
     </div>
     <nav id="nav"></nav>
   </aside>
@@ -20,6 +31,7 @@
     <header class="topbar">
       <button id="menu-btn" class="icon-btn" data-act="toggleNav" aria-label="Open menu"></button>
       <h1 id="page-title"></h1>
+      <button id="theme-toggle" class="theme-toggle" type="button" data-act="toggleTheme" aria-pressed="false"></button>
       <span id="api-status" data-state="checking" role="status" aria-live="polite">Checking API…</span>
       <span id="today"></span>
     </header>
