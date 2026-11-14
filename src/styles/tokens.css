@@ -4,7 +4,9 @@
   --warn: #F59E0B; --danger: #DC2626; --danger-button-text: #FFFFFF; --blue: #0EA5E9; --button-text: #FFFFFF; --active-text: #FFFFFF;
   --k1: #ECFDF5; --k2: #FEF9C3; --k3: #E0F2FE; --k4: #FCE7F3;
   --chart-sales: #16a34a; --chart-profit: #f59e0b; --shadow: 0 1px 3px #102a2010;
-  --sidebar-w: 240px; --radius: 14px;
+  --sidebar-start: #064E3B; --sidebar-middle: #03452F; --sidebar-end: #006B3C;
+  --sidebar-active: #00A83B;
+  --sidebar-w: 260px; --radius: 14px;
   color-scheme: light;
 }
 
@@ -14,6 +16,8 @@
   --warn: #FBBF24; --danger: #F87171; --danger-button-text: #301010; --blue: #38BDF8; --button-text: #063322; --active-text: #063322;
   --k1: #1B342A; --k2: #3A321D; --k3: #1D3440; --k4: #3C2835;
   --chart-sales: #34D399; --chart-profit: #FBBF24; --shadow: 0 4px 14px #00000024;
+  --sidebar-start: #061F18; --sidebar-middle: #041710; --sidebar-end: #064B2C;
+  --sidebar-active: #00A83B;
   color-scheme: dark;
 }
 
@@ -24,6 +28,8 @@
     --warn: #FBBF24; --danger: #F87171; --danger-button-text: #301010; --blue: #38BDF8; --button-text: #063322; --active-text: #063322;
     --k1: #1B342A; --k2: #3A321D; --k3: #1D3440; --k4: #3C2835;
     --chart-sales: #34D399; --chart-profit: #FBBF24; --shadow: 0 4px 14px #00000024;
+    --sidebar-start: #061F18; --sidebar-middle: #041710; --sidebar-end: #064B2C;
+    --sidebar-active: #00A83B;
     color-scheme: dark;
   }
 }

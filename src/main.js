@@ -5,7 +5,8 @@ import './styles/components.css';
 import { state } from './core/store.js';
 import { register, bindEvents } from './core/events.js';
 import { startRouter, rerender } from './core/router.js';
-import { toggleNav } from './components/sidebar.js';
+import { closeNav, toggleNav } from './components/sidebar.js';
+import { startDateDisplay } from './components/dateDisplay.js';
 import { icon } from './components/icons.js';
 import { $ } from './utils/dom.js';
 import { routes, featureActions } from './features/index.js';
@@ -26,6 +27,7 @@ const updateThemeToggle = () => {
 register({
   ...featureActions,
   toggleNav,
+  closeNav,
   toggleTheme() {
     currentTheme = setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     updateThemeToggle();
@@ -39,6 +41,11 @@ register({
 
 $('#menu-btn').innerHTML = icon('menu', 22);
 updateThemeToggle();
+let stopDateDisplay = startDateDisplay();
+addEventListener('pagehide', () => stopDateDisplay());
+addEventListener('pageshow', (event) => {
+  if (event.persisted) stopDateDisplay = startDateDisplay();
+});
 bindEvents(document);
 startRouter(routes);
 

@@ -13,7 +13,6 @@ export function rerender() {
   }
   renderSidebar(routes, route.id);
   $('#page-title').textContent = route.title;
-  $('#today').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   closeNav();
   $('#view').innerHTML = route.render();
   if (route.mount) route.mount();
