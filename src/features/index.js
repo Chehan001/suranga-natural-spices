@@ -8,8 +8,9 @@ import { people, peopleActions } from './people/index.js';
 import { reports } from './reports/index.js';
 import { settings, settingsActions } from './settings/index.js';
 import { tradeActions } from './trade/trade.js';
+import { productSelectActions } from '../components/ui.js';
 
 /** Navigation order (matches the UI reference). */
 export const routes = [dashboard, purchases, inventory, sales, processing, moneyRoute, people, reports, settings];
 
-export const featureActions = { ...tradeActions, ...processingActions, ...moneyActions, ...peopleActions, ...settingsActions };
+export const featureActions = { ...tradeActions, ...processingActions, ...moneyActions, ...peopleActions, ...settingsActions, ...productSelectActions };

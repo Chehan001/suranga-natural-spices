@@ -1,7 +1,7 @@
 import { state } from '../../core/store.js';
 import { sum, productName, isExpense } from '../../core/selectors.js';
 import { rs, esc, today, dayOffset } from '../../utils/format.js';
-import { kpi, table } from '../../components/ui.js';
+import { kpi, table, productDisplayName } from '../../components/ui.js';
 import morningBanner from '../../assest/Morning.png';
 import afternoonBanner from '../../assest/Afternoon.png';
 import eveningBanner from '../../assest/Evening.png';
@@ -75,7 +75,7 @@ export const dashboard = {
     const expenses = sum((x) => isExpense(x) && x.d === t0, (x) => x.a);
     const days = [6, 5, 4, 3, 2, 1, 0].map((i) => ({ l: dayOffset(i).slice(5), ...dayTotals(dayOffset(i)) }));
     const max = Math.max(1, ...days.map((x) => x.s));
-    const byProduct = d.prod.map((p) => ({ n: p.n, v: sum((x) => x.t === 'sale' && x.pid === p.id, (x) => x.a) })).filter((x) => x.v);
+    const byProduct = d.prod.map((p) => ({ n: productDisplayName(p), v: sum((x) => x.t === 'sale' && x.pid === p.id, (x) => x.a) })).filter((x) => x.v);
     const total = byProduct.reduce((a, x) => a + x.v, 0) || 1;
     let acc = 0;
     const gradient = byProduct.map((x, i) => { const s = acc; acc += (x.v / total) * 100; return `${COLORS[i % 6]} ${s}% ${acc}%`; }).join(',');
@@ -84,7 +84,7 @@ export const dashboard = {
     <div class="card"><h3>Quick actions</h3><div class="qa"><a href="#purchases">＋ Add purchase</a><a href="#sales">＋ Record sale</a><a href="#processing">＋ Add production</a><a href="#money">＋ Record expense</a></div></div>
     <div class="cols">
       <div class="card"><h3>Sales vs gross profit (7 days)</h3><div class="bars">${days.map((x) => `<div><span style="height:${(x.s / max) * 130}px;background:var(--chart-sales)"></span><span style="height:${(Math.max(0, x.s - x.c) / max) * 130}px;background:var(--chart-profit)"></span><br>${x.l}</div>`).join('')}</div><p class="lg"><i style="background:var(--chart-sales)"></i>Sales<i style="background:var(--chart-profit)"></i>Gross profit</p></div>
-      <div class="card"><h3>Stock at a glance</h3>${table(['Product', 'Available'], d.prod.slice(0, 5).map((p) => [esc(p.n), Math.round(d.stock[p.id] || 0) + ' kg']))}</div>
+      <div class="card"><h3>Stock at a glance</h3>${table(['Product', 'Available'], d.prod.slice(0, 5).map((p) => [esc(productDisplayName(p)), Math.round(d.stock[p.id] || 0) + ' kg']))}</div>
       <div class="card"><h3>Sales by product</h3><div class="donut" style="background:conic-gradient(${gradient || 'var(--border) 0 100%'})"></div><p class="lg">${byProduct.map((x, i) => `<i style="background:${COLORS[i % 6]}"></i>${esc(x.n)} ${((x.v / total) * 100).toFixed(0)}%`).join('')}</p></div>
     </div>
     <div class="card"><h3>Recent transactions</h3>${table(['Date', 'Type', 'Product', 'Party', 'Qty', 'Amount'],

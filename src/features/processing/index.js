@@ -3,7 +3,7 @@ import { productName } from '../../core/selectors.js';
 import { rerender } from '../../core/router.js';
 import { rs, esc, today } from '../../utils/format.js';
 import { $ } from '../../utils/dom.js';
-import { table, options, productOptions } from '../../components/ui.js';
+import { table, renderProductSelect } from '../../components/ui.js';
 import { toast } from '../../components/toast.js';
 
 export const processing = {
@@ -11,9 +11,9 @@ export const processing = {
   render() {
     const d = state.data;
     return `<div class="card"><h3>New production</h3><div class="g">
-      <label>Raw material (input)<select id="p-in">${productOptions()}</select></label>
+      <label>Raw material (input)${renderProductSelect({ id: 'p-in', value: '', products: d.prod })}</label>
       <label>Input quantity (kg)<input id="p-qty" type="number" min="0" step="any"></label>
-      <label>Finished product (output)<select id="p-out">${options(d.prod.map((p) => [p.id, p.n]).reverse())}</select></label>
+      <label>Finished product (output)${renderProductSelect({ id: 'p-out', value: '', products: [...d.prod].reverse() })}</label>
       <label>Output quantity (kg)<input id="p-oqty" type="number" min="0" step="any"></label>
       <label>Processing cost (Rs.)<input id="p-cost" type="number" min="0"></label></div>
       <p class="note">Waste / loss = input − output. Yield % = output ÷ input × 100.</p>

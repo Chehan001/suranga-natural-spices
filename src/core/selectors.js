@@ -1,7 +1,8 @@
 import { state } from './store.js';
+import { productDisplayName } from '../components/ui.js';
 
 export const sum = (filter, pick) => state.data.tx.filter(filter).reduce((a, x) => a + pick(x), 0);
-export const productName = (id) => (state.data.prod.find((p) => p.id === id) || { n: id }).n;
+export const productName = (id) => productDisplayName(state.data.prod.find((p) => p.id === id) || { n: id });
 export const isExpense = (x) => x.t === 'expense' || x.t === 'prod';
 
 /** Cash position and outstanding balances derived from transactions. */

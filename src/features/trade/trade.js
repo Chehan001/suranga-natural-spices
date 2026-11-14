@@ -4,7 +4,7 @@ import { productName } from '../../core/selectors.js';
 import { rerender } from '../../core/router.js';
 import { rs, esc, today } from '../../utils/format.js';
 import { $ } from '../../utils/dom.js';
-import { table, options, productOptions } from '../../components/ui.js';
+import { table, options, renderProductSelect } from '../../components/ui.js';
 import { toast } from '../../components/toast.js';
 
 let busy = false;
@@ -15,28 +15,49 @@ export function txForm(kind) {
   const people = d.ppl.filter((p) => (sale ? p.t === 'Customer' : p.t !== 'Customer')).map((p) => [p.n, p.n]);
   if (sale) people.unshift(['Walk-in', 'Walk-in customer (retail)']);
   const firstPrice = d.prod[0] ? d.prod[0].p : '';
-  return `<div class="card"><h3>${sale ? 'New sale' : 'New purchase'}</h3>
-  ${sale ? '<p><label style="display:inline"><input type="radio" name="ty" value="Wholesale" checked> Wholesale</label> &nbsp; <label style="display:inline"><input type="radio" name="ty" value="Retail"> Retail</label></p>' : ''}
-  <div class="g"><label>${sale ? 'Customer' : 'Supplier / Farmer'}<select id="who">${options(people)}</select></label>
-  <label>Date<input id="tx-date" type="date" value="${today()}"></label></div>
-  <div class="g"><label>Product<select id="line-product" data-change="fillPrice">${productOptions()}</select></label>
-  <label>Quantity (kg)<input id="line-qty" type="number" min="0" step="any" inputmode="decimal"></label>
-  <label>Unit price (Rs.)<input id="line-price" type="number" min="0" value="${firstPrice}"></label>
-  <button class="btn" data-act="addLine" data-arg="${kind}">+ Add item</button></div>
-  <div id="cart"></div>
-  <div class="g"><label>Amount ${sale ? 'received' : 'paid'} now (blank = in full)<input id="paid" type="number" min="0"></label></div>
-  <button class="btn big" data-act="saveTx" data-arg="${kind}">Save ${sale ? 'sale' : 'purchase'} ✓</button></div>`;
+  return `<div class="card purchase-card">
+    <div class="purchase-card-header">
+      <h3>${sale ? 'New sale' : 'New purchase'}</h3>
+      ${sale ? '<div class="sale-type-toggle"><label><input type="radio" name="ty" value="Wholesale" checked> <span>Wholesale</span></label><label><input type="radio" name="ty" value="Retail"> <span>Retail</span></label></div>' : ''}
+    </div>
+    <div class="purchase-form-grid purchase-meta-grid">
+      <label class="field">${sale ? 'Customer' : 'Supplier / Farmer'}<select id="who">${options(people)}</select></label>
+      <label class="field">Date<input id="tx-date" type="date" value="${today()}"></label>
+    </div>
+    <div class="purchase-item-row">
+      <label class="field">Product${renderProductSelect({ id: 'line-product', value: '', changeHandler: 'fillPrice', products: d.prod })}</label>
+      <label class="field">Quantity (kg)<input id="line-qty" type="number" min="0" step="any" inputmode="decimal"></label>
+      <label class="field">Unit price (Rs.)<input id="line-price" type="number" min="0" value="${firstPrice}"></label>
+      <button class="btn purchase-add-btn" type="button" data-act="addLine" data-arg="${kind}">+ Add item</button>
+    </div>
+    <div id="cart" class="purchase-cart"></div>
+    <div class="purchase-summary-block">
+      <label class="field amount-paid-field">Amount ${sale ? 'received' : 'paid'} now (blank = in full)<input id="paid" type="number" min="0"></label>
+      <div class="purchase-actions">
+        <button class="btn btn-secondary" type="button" data-act="cancelPurchase" data-arg="${kind}">Cancel</button>
+        <button class="btn btn-primary" type="button" data-act="saveTx" data-arg="${kind}">Save ${sale ? 'sale' : 'purchase'} ✓</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 export function drawCart(kind) {
   const el = $('#cart');
   if (!el) return;
   const cart = state.cart[kind];
+  const total = cart.reduce((a, l) => a + l.a, 0);
   el.innerHTML =
-    table(['Product', 'Qty', 'Price', 'Amount', ''], cart.map((l, i) => [
-      esc(productName(l.pid)), l.q + ' kg', rs(l.p), rs(l.a),
-      `<button class="btn r" aria-label="Remove item" data-act="removeLine" data-arg="${kind}:${i}">✕</button>`,
-    ])) + `<p style="text-align:right"><b>Total: ${rs(cart.reduce((a, l) => a + l.a, 0))}</b></p>`;
+    '<div class="purchase-table-wrap">' +
+    table(['#', 'Product', 'Qty', 'Unit Price', 'Amount', ''], cart.map((l, i) => [
+      i + 1,
+      esc(productName(l.pid)),
+      l.q + ' kg',
+      rs(l.p),
+      rs(l.a),
+      `<button class="btn btn-remove" aria-label="Remove item" data-act="removeLine" data-arg="${kind}:${i}">✕</button>`,
+    ])) +
+    '</div>' +
+    `<div class="purchase-total-row"><span>Total amount</span><strong>${rs(total)}</strong></div>`;
 }
 
 export const history = (kind) =>
@@ -67,6 +88,10 @@ export const tradeActions = {
     const [kind, i] = arg.split(':');
     state.cart[kind].splice(+i, 1);
     drawCart(kind);
+  },
+  cancelPurchase(kind) {
+    state.cart[kind] = [];
+    rerender();
   },
   saveTx(kind) {
     if (busy) return;

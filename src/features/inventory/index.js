@@ -1,7 +1,7 @@
 import { state } from '../../core/store.js';
 import { productName } from '../../core/selectors.js';
 import { rs, esc } from '../../utils/format.js';
-import { kpi, table, tabs } from '../../components/ui.js';
+import { kpi, table, tabs, productDisplayName } from '../../components/ui.js';
 
 const status = (p) => {
   const q = state.data.stock[p.id] || 0;
@@ -20,7 +20,7 @@ export const inventory = {
       '<div class="card">' +
       (state.tab.inventory === 'sum'
         ? table(['Product', 'Category', 'Available', 'Unit', 'Stock value', 'Reorder at', 'Status'],
-            d.prod.map((p) => [esc(p.n), esc(p.c), Math.round(d.stock[p.id] || 0), p.u, rs((d.stock[p.id] || 0) * (d.cost[p.id] || 0)), p.ro, `<span class="pill ${status(p)[1]}">${status(p)[0]}</span>`]))
+            d.prod.map((p) => [esc(productDisplayName(p)), esc(p.c), Math.round(d.stock[p.id] || 0), p.u, rs((d.stock[p.id] || 0) * (d.cost[p.id] || 0)), p.ro, `<span class="pill ${status(p)[1]}">${status(p)[0]}</span>`]))
         : table(['Date', 'Product', 'Type', 'Change', 'Output'], movements)) + '</div>';
   },
 };

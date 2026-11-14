@@ -2,7 +2,7 @@ import { state, persist, clearAll } from '../../core/store.js';
 import { rerender } from '../../core/router.js';
 import { rs, esc } from '../../utils/format.js';
 import { $ } from '../../utils/dom.js';
-import { table, options } from '../../components/ui.js';
+import { table, options, productDisplayName } from '../../components/ui.js';
 import { toast } from '../../components/toast.js';
 
 const CATEGORIES = ['Grains', 'Spices', 'Coconut', 'Arecanut'];
@@ -19,7 +19,7 @@ export const settings = {
       <label>Reorder level (kg)<input id="s-reorder" type="number" min="0"></label>
       <button class="btn" data-act="addProduct">+ Add</button></div></div>
       <div class="card"><h3>Products &amp; prices</h3>${table(['Product', 'Category', 'Unit', 'Default price', 'Reorder at'],
-        state.data.prod.map((p) => [esc(p.n), esc(p.c), p.u, rs(p.p), p.ro]))}</div>
+        state.data.prod.map((p) => [esc(productDisplayName(p)), esc(p.c), p.u, rs(p.p), p.ro]))}</div>
       <div class="card"><h3>Business</h3><p>Suranga Natural Spices · Currency LKR · Timezone Asia/Colombo</p>
       <button id="clear-btn" class="btn r" data-act="clearData">Clear all data</button></div>`;
   },
