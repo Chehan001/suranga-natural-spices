@@ -20,7 +20,7 @@ export function txForm(kind) {
   <div class="g"><label>${sale ? 'Customer' : 'Supplier / Farmer'}<select id="who">${options(people)}</select></label>
   <label>Date<input id="tx-date" type="date" value="${today()}"></label></div>
   <div class="g"><label>Product<select id="line-product" data-change="fillPrice">${productOptions()}</select></label>
-  <label>Quantity (kg)<input id="line-qty" type="number" min="0" inputmode="decimal"></label>
+  <label>Quantity (kg)<input id="line-qty" type="number" min="0" step="any" inputmode="decimal"></label>
   <label>Unit price (Rs.)<input id="line-price" type="number" min="0" value="${firstPrice}"></label>
   <button class="btn" data-act="addLine" data-arg="${kind}">+ Add item</button></div>
   <div id="cart"></div>
@@ -34,7 +34,7 @@ export function drawCart(kind) {
   const cart = state.cart[kind];
   el.innerHTML =
     table(['Product', 'Qty', 'Price', 'Amount', ''], cart.map((l, i) => [
-      productName(l.pid), l.q + ' kg', rs(l.p), rs(l.a),
+      esc(productName(l.pid)), l.q + ' kg', rs(l.p), rs(l.a),
       `<button class="btn r" aria-label="Remove item" data-act="removeLine" data-arg="${kind}:${i}">✕</button>`,
     ])) + `<p style="text-align:right"><b>Total: ${rs(cart.reduce((a, l) => a + l.a, 0))}</b></p>`;
 }
@@ -42,7 +42,7 @@ export function drawCart(kind) {
 export const history = (kind) =>
   table(['Date', 'Product', 'Party', 'Qty', 'Amount', 'Paid', 'Due'],
     state.data.tx.filter((x) => x.t === kind).slice().reverse()
-      .map((x) => [x.d, productName(x.pid), esc(x.who), x.q + ' kg', rs(x.a), rs(x.pd), rs(x.a - x.pd)]));
+      .map((x) => [x.d, esc(productName(x.pid)), esc(x.who), x.q + ' kg', rs(x.a), rs(x.pd), rs(x.a - x.pd)]));
 
 export const tradeActions = {
   fillPrice(_, el) {
@@ -52,7 +52,8 @@ export const tradeActions = {
   addLine(kind) {
     const pid = $('#line-product').value, q = +$('#line-qty').value, p = +$('#line-price').value;
     if (!pid) return toast('Add products in Settings first', true);
-    if (!(q > 0 && p > 0)) return toast('Enter quantity and price above zero', true);
+    if (!(Number.isFinite(q) && Number.isFinite(p) && q > 0 && p > 0)) return toast('Enter quantity and price above zero', true);
+    if (!Number.isFinite(q * p)) return toast('The line amount is too large', true);
     if (kind === 'sale') {
       const used = state.cart.sale.filter((l) => l.pid === pid).reduce((a, l) => a + l.q, 0);
       const have = state.data.stock[pid] || 0;
@@ -75,6 +76,10 @@ export const tradeActions = {
     if (!who) return toast('Add a person in People first', true);
     const d = state.data, date = $('#tx-date').value || today();
     const total = cart.reduce((a, l) => a + l.a, 0), pv = $('#paid').value;
+    if (!Number.isFinite(total)) return toast('The transaction amount is too large', true);
+    if (pv !== '' && (!Number.isFinite(Number(pv)) || Number(pv) < 0)) {
+      return toast('Enter a valid payment amount', true);
+    }
     let remaining = pv === '' ? total : Math.min(total, Math.max(0, +pv));
     const checked = document.querySelector('input[name=ty]:checked');
     busy = true;
@@ -92,8 +97,11 @@ export const tradeActions = {
       }
       d.tx.push({ d: date, t: kind, pid: l.pid, who, q: l.q, a: l.a, pd, cg, ty: checked ? checked.value : undefined });
     });
+    if (!persist()) {
+      busy = false;
+      return toast('Could not save the transaction. No changes were saved.', true);
+    }
     state.cart[kind] = [];
-    persist();
     busy = false;
     toast(`${kind === 'sale' ? 'Sale' : 'Purchase'} saved: ${rs(total)}`);
     rerender();

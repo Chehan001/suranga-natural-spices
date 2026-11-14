@@ -10,6 +10,7 @@ import { icon } from './components/icons.js';
 import { $ } from './utils/dom.js';
 import { routes, featureActions } from './features/index.js';
 import { api } from './services/api.js';
+import { toast } from './components/toast.js';
 
 register({
   ...featureActions,
@@ -25,6 +26,8 @@ $('#menu-btn').innerHTML = icon('menu', 22);
 bindEvents(document);
 startRouter(routes);
 
+if (api.getLoadError()) toast(api.getLoadError(), true);
+
 const apiStatus = $('#api-status');
 api.checkConnection()
   .then(() => {
@@ -32,7 +35,8 @@ api.checkConnection()
     apiStatus.dataset.state = 'connected';
     apiStatus.title = 'Connected to the backend API';
   })
-  .catch(() => {
+  .catch((error) => {
+    console.error('Backend API health check failed.', error);
     apiStatus.textContent = 'API offline';
     apiStatus.dataset.state = 'disconnected';
     apiStatus.title = 'Backend API is unavailable. Check that the backend is running.';

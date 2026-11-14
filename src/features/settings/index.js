@@ -28,12 +28,20 @@ export const settings = {
 export const settingsActions = {
   addProduct() {
     const name = $('#s-name').value.trim(), price = +$('#s-price').value;
-    if (!name || !(price > 0)) return toast('Enter name and price', true);
-    state.data.prod.push({ id: name.toLowerCase().replace(/\W/g, '') + (Date.now() % 1000), n: name, c: $('#s-cat').value, u: 'kg', ro: +$('#s-reorder').value || 100, p: price });
-    persist(); toast('Product added'); rerender();
+    if (!name || !Number.isFinite(price) || !(price > 0)) return toast('Enter name and price', true);
+    const reorderValue = $('#s-reorder').value;
+    const reorder = reorderValue === '' ? 100 : Number(reorderValue);
+    if (!Number.isFinite(reorder) || reorder < 0) return toast('Enter a valid non-negative reorder level', true);
+    const baseId = name.toLowerCase().replace(/\W/g, '') || 'product';
+    let id = `${baseId}-${Date.now()}`;
+    while (state.data.prod.some((product) => product.id === id)) id = `${baseId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    state.data.prod.push({ id, n: name, c: $('#s-cat').value, u: 'kg', ro: reorder, p: price });
+    if (!persist()) return toast('Could not save the product. No changes were saved.', true);
+    toast('Product added'); rerender();
   },
   clearData() {
     if (!armed) { armed = true; $('#clear-btn').textContent = 'Click again to confirm: this deletes everything'; return; }
-    clearAll(); toast('All data cleared'); rerender();
+    if (!clearAll()) return toast('Could not clear data from browser storage. No changes were made.', true);
+    toast('All data cleared'); rerender();
   },
 };

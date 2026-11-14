@@ -1,6 +1,7 @@
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px #0000000d; }
 .card h3 { margin-bottom: 12px; font-size: 16px; }
-.hero { background: linear-gradient(120deg, #16a34a, #065f46 55%, #facc15); color: #fff; border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+.hero-banner { width: 100%; overflow: hidden; border-radius: 16px; margin-bottom: 16px; }
+.hero-banner img { display: block; width: 100%; height: auto; }
 .kpi { border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); }
 .kpi small { color: var(--muted); display: block; } .kpi b { font-size: 21px; }
 .c1 { background: var(--k1); } .c2 { background: var(--k2); } .c3 { background: var(--k3); } .c4 { background: var(--k4); }

@@ -35,12 +35,14 @@ export const moneyActions = {
     if (!who) return toast('Add a person in People first', true);
     if (!(amount > 0)) return toast('Enter an amount', true);
     state.data.tx.push({ d: today(), t: $('#m-dir').value, who, a: amount, pd: amount });
-    persist(); toast('Payment recorded'); rerender();
+    if (!persist()) return toast('Could not save the payment. No changes were saved.', true);
+    toast('Payment recorded'); rerender();
   },
   saveExpense() {
     const amount = +$('#e-amt').value;
     if (!(amount > 0)) return toast('Enter an amount', true);
     state.data.tx.push({ d: today(), t: 'expense', who: $('#e-cat').value, a: amount, pd: amount });
-    persist(); toast('Expense recorded'); rerender();
+    if (!persist()) return toast('Could not save the expense. No changes were saved.', true);
+    toast('Expense recorded'); rerender();
   },
 };

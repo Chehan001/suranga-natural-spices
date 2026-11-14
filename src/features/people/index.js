@@ -26,6 +26,7 @@ export const peopleActions = {
     const name = $('#n-name').value.trim();
     if (name.length < 2) return toast('Enter a name', true);
     state.data.ppl.push({ n: name, t: state.tab.people, ph: $('#n-phone').value, l: $('#n-loc').value });
-    persist(); toast('Person added'); rerender();
+    if (!persist()) return toast('Could not save the person. No changes were saved.', true);
+    toast('Person added'); rerender();
   },
 };

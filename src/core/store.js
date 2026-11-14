@@ -7,8 +7,23 @@ export const state = {
   cart: { purchase: [], sale: [] },
 };
 
-export const persist = () => api.save(state.data);
+let savedData = JSON.stringify(state.data);
+
+export const persist = () => {
+  try {
+    api.save(state.data);
+    savedData = JSON.stringify(state.data);
+    return true;
+  } catch (error) {
+    console.error('Could not save business data to browser storage.', error);
+    state.data = JSON.parse(savedData);
+    return false;
+  }
+};
+
 export const clearAll = () => {
   state.data = api.empty();
-  persist();
+  if (!persist()) return false;
+  state.cart = { purchase: [], sale: [] };
+  return true;
 };
