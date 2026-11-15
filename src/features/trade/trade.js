@@ -14,7 +14,7 @@ export function txForm(kind) {
   const sale = kind === 'sale';
   const people = d.ppl.filter((p) => (sale ? p.t === 'Customer' : p.t !== 'Customer')).map((p) => [p.n, p.n]);
   if (sale) people.unshift(['Walk-in', 'Walk-in customer (retail)']);
-  const firstPrice = d.prod[0] ? d.prod[0].p : '';
+  const firstPrice = d.prod[0]?.p || '';
   return `<div class="card purchase-card">
     <div class="purchase-card-header">
       <h3>${sale ? 'New sale' : 'New purchase'}</h3>
@@ -68,11 +68,11 @@ export const history = (kind) =>
 export const tradeActions = {
   fillPrice(_, el) {
     const p = state.data.prod.find((x) => x.id === el.value);
-    if (p) $('#line-price').value = p.p;
+    if (p) $('#line-price').value = p.p || '';
   },
   addLine(kind) {
     const pid = $('#line-product').value, q = +$('#line-qty').value, p = +$('#line-price').value;
-    if (!pid) return toast('Add products in Settings first', true);
+    if (!pid) return toast('Select a product first', true);
     if (!(Number.isFinite(q) && Number.isFinite(p) && q > 0 && p > 0)) return toast('Enter quantity and price above zero', true);
     if (!Number.isFinite(q * p)) return toast('The line amount is too large', true);
     if (kind === 'sale') {

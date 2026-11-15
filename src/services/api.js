@@ -1,8 +1,10 @@
+import { createCatalogProducts } from '../data/productCatalog.js';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/+$/, '');
 const KEY = 'agro-erp:v1';
 let loadError = null;
 
-export const empty = () => ({ prod: [], stock: {}, cost: {}, cash: 0, ppl: [], tx: [] });
+export const empty = () => ({ prod: createCatalogProducts(), stock: {}, cost: {}, cash: 0, ppl: [], tx: [] });
 
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const isFiniteRecord = (value) => isRecord(value) && Object.values(value).every(Number.isFinite);
@@ -62,7 +64,7 @@ export const api = {
       if (!stored) return empty();
       const data = JSON.parse(stored);
       if (!isData(data)) throw new Error('Saved data has an invalid format');
-      return data;
+      return { ...data, prod: createCatalogProducts(data.prod) };
     } catch (error) {
       loadError = 'Saved business data could not be loaded. A new empty workspace is being used.';
       console.error(loadError, error);
