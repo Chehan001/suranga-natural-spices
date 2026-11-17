@@ -1,6 +1,8 @@
 import { esc } from '../utils/format.js';
-import { state } from '../core/store.js';
+import { refreshProducts, state } from '../core/store.js';
 import { findCatalogProduct } from '../data/productCatalog.js';
+import { api, ApiError } from '../services/api.js';
+import { toast } from './toast.js';
 
 export const getProductDisplayParts = (product) => {
   const rawName = product && typeof product === 'object'
@@ -86,7 +88,7 @@ const setProductDropdownOpen = (wrapper, open) => {
   if (open) wrapper.querySelector('.product-select__search')?.focus();
 };
 
-export const renderProductSelect = ({ id, value = '', products = state.data.prod, changeHandler = '' }) => {
+export const renderProductSelect = ({ id, value = '', products = state.data.prod, changeHandler = '', allowAddProduct = true }) => {
   const list = getProductList(products);
   const selected = list.find((product) => String(product.id) === String(value));
   const selectedLabel = selected ? selected.nameEn : productPlaceholder;
@@ -106,6 +108,7 @@ export const renderProductSelect = ({ id, value = '', products = state.data.prod
       <span class="product-select__search-label" id="${esc(id)}-search-label">Search products</span>
       <input id="${esc(id)}-search" class="product-select__search" type="search" autocomplete="off" aria-labelledby="${esc(id)}-search-label" placeholder="Search in English or Sinhala" data-input="filterProductOptions" data-keydown="productDropdownKeydown">
       <button class="product-select__clear" type="button" data-act="clearProductSelection" data-arg="${esc(id)}" data-keydown="productDropdownKeydown">Clear selection</button>
+      ${allowAddProduct ? `<button class="product-select__add" type="button" data-act="openProductCreateModal" data-arg="${esc(id)}" data-keydown="productDropdownKeydown">+ Add New Product</button>` : ''}
       <ul class="product-select__options" id="${esc(id)}-list" role="listbox" aria-label="Products">
         ${list.map((product) => `<li><button class="product-select__option${String(product.id) === String(value) ? ' selected' : ''}" type="button" role="option" aria-selected="${String(product.id) === String(value)}" data-product-option data-product-value="${esc(product.id)}" data-act="selectProductOption" data-keydown="productDropdownKeydown">
           <span>${esc(labelFor(product))}</span>
@@ -113,6 +116,45 @@ export const renderProductSelect = ({ id, value = '', products = state.data.prod
         </button></li>`).join('')}
         <li class="product-select__empty" data-product-empty ${list.length ? 'hidden' : ''}>${list.length ? 'No matching products' : 'No products loaded from the database'}</li>
       </ul>
+    </div>
+    <div class="product-select__modal" hidden>
+      <div class="product-select__modal-window" role="dialog" aria-modal="true" aria-labelledby="${esc(id)}-product-modal-title">
+        <div class="product-select__modal-header">
+          <h4 id="${esc(id)}-product-modal-title">Add Product</h4>
+          <button type="button" class="product-select__close" data-act="closeProductCreateModal" data-arg="${esc(id)}" aria-label="Close add product dialog">✕</button>
+        </div>
+        <div class="product-select__modal-body">
+          <label class="field">
+            <span>Product name</span>
+            <input type="text" data-product-create-name placeholder="Example: Nutmeg" maxlength="120">
+          </label>
+          <label class="field">
+            <span>Category</span>
+            <select data-product-create-category>
+              <option value="Grains">Grains</option>
+              <option value="Spices">Spices</option>
+              <option value="Coconut">Coconut</option>
+              <option value="Arecanut">Arecanut</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Unit</span>
+            <input type="text" value="kg" readonly>
+          </label>
+          <label class="field">
+            <span>Default price (Rs./kg)</span>
+            <input type="number" min="0" step="0.01" data-product-create-price placeholder="0.00">
+          </label>
+          <label class="field">
+            <span>Reorder level (kg)</span>
+            <input type="number" min="0" step="0.001" data-product-create-reorder value="100">
+          </label>
+        </div>
+        <div class="product-select__modal-actions">
+          <button type="button" class="btn btn-secondary" data-act="closeProductCreateModal" data-arg="${esc(id)}">Cancel</button>
+          <button type="button" class="btn" data-act="saveProductFromSelector" data-arg="${esc(id)}">Save Product</button>
+        </div>
+      </div>
     </div>
     <select id="${esc(id)}" class="product-select__native" ${changeHandler ? `data-change="${esc(changeHandler)}"` : ''} aria-label="Product" hidden>
       <option value="" ${!value ? 'selected' : ''}>${esc(productPlaceholder)}</option>
@@ -167,6 +209,90 @@ export const productSelectActions = {
       if (visible) visibleCount += 1;
     });
     wrapper.querySelector('[data-product-empty]').hidden = visibleCount > 0;
+  },
+  openProductCreateModal(_, el) {
+    const wrapper = el.closest('[data-product-select]');
+    if (!wrapper) return;
+    const modal = wrapper.querySelector('.product-select__modal');
+    const input = wrapper.querySelector('[data-product-create-name]');
+    if (!modal || !input) return;
+    setProductDropdownOpen(wrapper, false);
+    modal.hidden = false;
+    input.value = '';
+    const category = wrapper.querySelector('[data-product-create-category]');
+    if (category) category.value = 'Grains';
+    const price = wrapper.querySelector('[data-product-create-price]');
+    if (price) price.value = '';
+    const reorder = wrapper.querySelector('[data-product-create-reorder]');
+    if (reorder) reorder.value = '100';
+    input.focus();
+  },
+  closeProductCreateModal(_, el) {
+    const wrapper = el.closest('[data-product-select]');
+    if (!wrapper) return;
+    const modal = wrapper.querySelector('.product-select__modal');
+    if (!modal) return;
+    modal.hidden = true;
+  },
+  async saveProductFromSelector(id, el) {
+    const wrapper = el.closest('[data-product-select]');
+    if (!wrapper) return;
+    const modal = wrapper.querySelector('.product-select__modal');
+    if (!modal) return;
+    const nameInput = wrapper.querySelector('[data-product-create-name]');
+    const categoryInput = wrapper.querySelector('[data-product-create-category]');
+    const priceInput = wrapper.querySelector('[data-product-create-price]');
+    const reorderInput = wrapper.querySelector('[data-product-create-reorder]');
+    const name = nameInput?.value.trim() ?? '';
+    const price = priceInput?.value.trim() ?? '';
+    const reorder = reorderInput?.value.trim() ?? '100';
+    if (!name) {
+      toast('Enter a product name before saving.', true);
+      nameInput?.focus();
+      return;
+    }
+    if (!Number(price) || Number(price) <= 0) {
+      toast('Enter a valid default price greater than zero.', true);
+      priceInput?.focus();
+      return;
+    }
+    if (reorder !== '' && (!Number.isFinite(Number(reorder)) || Number(reorder) < 0)) {
+      toast('Enter a valid non-negative reorder level.', true);
+      reorderInput?.focus();
+      return;
+    }
+
+    try {
+      const created = await api.createProduct({
+        name,
+        category: categoryInput?.value || 'Grains',
+        unit: 'kg',
+        defaultPrice: String(Number(price)),
+        reorderLevel: reorder === '' ? '100' : String(Number(reorder)),
+      });
+      await refreshProducts();
+      const nextValue = state.data.prod.find((product) => {
+        const label = product.name ?? product.n ?? product.nameEn ?? '';
+        return String(label).trim().toLowerCase() === name.toLowerCase();
+      })?.id ?? created?.id ?? '';
+      if (nextValue) {
+        const nativeSelect = wrapper.querySelector('select');
+        if (nativeSelect) {
+          nativeSelect.value = nextValue;
+          nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          syncProductDropdown(id, nextValue);
+        }
+      }
+      modal.hidden = true;
+      toast('Product saved to PostgreSQL and selected in the form.');
+    } catch (error) {
+      const message = error instanceof ApiError && error.code === 'DUPLICATE_PRODUCT'
+        ? 'A product with this name already exists in the active organization.'
+        : error instanceof Error
+          ? error.message
+          : 'The product could not be saved.';
+      toast(message, true);
+    }
   },
   productDropdownKeydown(_, el, event) {
     const wrapper = el.closest('[data-product-select]');
