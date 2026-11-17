@@ -28,7 +28,7 @@ src/
 ## Connecting your backend
 The frontend checks `GET /api/v1/health/live` on startup. During development, Vite proxies `/api` to `http://localhost:3001`; copy `.env.example` to `.env` only if you need to override `VITE_API_BASE_URL`.
 
-The business screens still use browser `localStorage`: the backend currently provides health and authentication endpoints, not product, stock, purchase, or sales APIs. Those screens will move to server data as the business endpoints are implemented. The API liveness check does not require a database; `/api/v1/health/ready` reports database connectivity separately.
+Products (Settings list/create/update) use `GET/POST/PATCH /api/v1/products` and PostgreSQL. Other business screens still use browser `localStorage` (`agro-erp:v1`) until their NestJS modules exist. Product failures show API errors and do not fall back to fake local products. The API liveness check does not require a database; `/api/v1/health/ready` reports database connectivity separately.
 
 ## Data model (`state.data`)
 `prod[]` products · `stock{}` quantity by product id · `cost{}` average cost · `ppl[]` people (Farmer/Supplier/Customer) · `tx[]` transactions (`t` = purchase | sale | prod | expense | payin | payout) · `cash` opening cash.

@@ -1,6 +1,6 @@
 import { esc } from '../utils/format.js';
 import { state } from '../core/store.js';
-import { PRODUCT_CATALOG, findCatalogProduct } from '../data/productCatalog.js';
+import { findCatalogProduct } from '../data/productCatalog.js';
 
 export const getProductDisplayParts = (product) => {
   const rawName = product && typeof product === 'object'
@@ -21,15 +21,25 @@ export const productDisplayName = (product) => getProductDisplayParts(product).n
 
 export const productOptions = (products = state.data.prod) => {
   return getProductList(products)
-    .map((product) => [product.id, `${product.nameEn} (${product.nameSi})`])
+    .map((product) => [product.id, product.nameSi ? `${product.nameEn} (${product.nameSi})` : product.nameEn])
     .map(([value, text]) => `<option value="${esc(value)}">${esc(text)}</option>`)
     .join('');
 };
 
-const getProductList = (products = state.data.prod) => PRODUCT_CATALOG.map((catalogProduct) => {
-  const product = products.find((entry) =>
-    String(entry.id) === catalogProduct.id || findCatalogProduct(entry)?.id === catalogProduct.id);
-  return { ...catalogProduct, id: product?.id ?? catalogProduct.id };
+/** Build selectable products from PostgreSQL-backed state; enrich labels from catalog when names match. */
+const getProductList = (products = state.data.prod) => products.map((product) => {
+  const parts = getProductDisplayParts(product);
+  const catalog = findCatalogProduct(product);
+  return {
+    id: product.id,
+    nameEn: parts.nameEn,
+    nameSi: parts.nameSi || catalog?.nameSi || '',
+    n: product.n ?? parts.nameEn,
+    c: product.c,
+    u: product.u,
+    p: product.p,
+    ro: product.ro,
+  };
 });
 
 const productPlaceholder = 'Select Product / නිෂ්පාදනය තෝරන්න';
@@ -80,8 +90,9 @@ export const renderProductSelect = ({ id, value = '', products = state.data.prod
   const list = getProductList(products);
   const selected = list.find((product) => String(product.id) === String(value));
   const selectedLabel = selected ? selected.nameEn : productPlaceholder;
+  const labelFor = (product) => (product.nameSi ? `${product.nameEn} (${product.nameSi})` : product.nameEn);
   const nativeOptions = list.map((product) => {
-    const optionText = `${product.nameEn} (${product.nameSi})`;
+    const optionText = labelFor(product);
     const isSelected = String(product.id) === String(value);
     return `<option value="${esc(product.id)}" ${isSelected ? 'selected' : ''}>${esc(optionText)}</option>`;
   }).join('');
@@ -97,10 +108,10 @@ export const renderProductSelect = ({ id, value = '', products = state.data.prod
       <button class="product-select__clear" type="button" data-act="clearProductSelection" data-arg="${esc(id)}" data-keydown="productDropdownKeydown">Clear selection</button>
       <ul class="product-select__options" id="${esc(id)}-list" role="listbox" aria-label="Products">
         ${list.map((product) => `<li><button class="product-select__option${String(product.id) === String(value) ? ' selected' : ''}" type="button" role="option" aria-selected="${String(product.id) === String(value)}" data-product-option data-product-value="${esc(product.id)}" data-act="selectProductOption" data-keydown="productDropdownKeydown">
-          <span>${esc(`${product.nameEn} (${product.nameSi})`)}</span>
+          <span>${esc(labelFor(product))}</span>
           <span class="product-select__check" aria-hidden="true">✓</span>
         </button></li>`).join('')}
-        <li class="product-select__empty" data-product-empty hidden>No matching products</li>
+        <li class="product-select__empty" data-product-empty ${list.length ? 'hidden' : ''}>${list.length ? 'No matching products' : 'No products loaded from the database'}</li>
       </ul>
     </div>
     <select id="${esc(id)}" class="product-select__native" ${changeHandler ? `data-change="${esc(changeHandler)}"` : ''} aria-label="Product" hidden>

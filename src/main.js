@@ -2,7 +2,7 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/layout.css';
 import './styles/components.css';
-import { state } from './core/store.js';
+import { refreshProducts, state } from './core/store.js';
 import { register, bindEvents } from './core/events.js';
 import { startRouter, rerender } from './core/router.js';
 import { closeNav, toggleNav } from './components/sidebar.js';
@@ -50,6 +50,11 @@ bindEvents(document);
 startRouter(routes);
 
 if (api.getLoadError()) toast(api.getLoadError(), true);
+
+refreshProducts().then((ok) => {
+  if (!ok && state.products.error) toast(state.products.error, true);
+  rerender();
+});
 
 const apiStatus = $('#api-status');
 api.checkConnection()

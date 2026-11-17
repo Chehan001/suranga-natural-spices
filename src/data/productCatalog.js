@@ -22,6 +22,7 @@ export const findCatalogProduct = (product) => {
     normalized === normalize(`${nameEn} / ${nameSi}`));
 };
 
+/** Legacy helper — not used for persistence. Products load from PostgreSQL via the API. */
 export const createCatalogProducts = (existingProducts = []) => {
   const selectedIds = new Set();
   const catalogProducts = PRODUCT_CATALOG.map((catalogProduct) => {
